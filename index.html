@@ -130,7 +130,31 @@
     .calc-panel, .calc-results { padding: 21px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
     .calc-panel h3, .calc-results h3 { margin-bottom: 17px; font-size: 17px; }
     .form-grid { display: grid; gap: 14px; }
+    .consumer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 21px 0 12px; }
+    .consumer-head h4, .battery-heading { margin: 0; font-size: 14px; }
+    .consumer-list { display: grid; gap: 10px; }
+    .consumer-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #111a14; }
+    .consumer-row label { display: grid; gap: 5px; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .consumer-row input { width: 100%; min-width: 0; min-height: 42px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); color: var(--text); font: inherit; font-weight: 500; }
+    .remove-consumer { width: 42px; height: 42px; justify-self: end; color: var(--muted); }
+    .small-button { min-height: 40px; padding: 8px 12px; font-size: 12px; }
+    .battery-heading { margin: 22px 0 12px; }
+    .grid-status { margin: 0 0 15px; padding: 11px 13px; border-left: 2px solid var(--accent); background: #e4b85b12; color: var(--accent-light); font-size: 13px; }
+    .grid-status.ready { border-color: var(--green); background: #9bbf8612; color: #d8eccb; }
+    .city-status { min-height: 0; margin: 8px 0 14px; color: var(--muted); font-size: 12px; }
+    .city-status:empty { display: none; }
+    .city-status.warning { padding: 11px 13px; border-left: 2px solid #e4a65b; background: #e4a65b12; color: #ffdda9; font-size: 13px; }
+    .solar-profile { margin: 0 0 17px; }
+    .solar-profile h4 { margin: 0 0 6px; font-size: 14px; }
+    .solar-profile .formula-note { margin: 0 0 10px; }
+    .month-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+    .month-cell { padding: 9px 7px; border: 1px solid var(--line); border-radius: 9px; background: #101811; text-align: center; }
+    .month-cell strong, .month-cell span { display: block; }
+    .month-cell strong { color: var(--muted); font-size: 10px; font-weight: 650; }
+    .month-cell span { margin-top: 3px; color: var(--accent-light); font-size: 14px; font-variant-numeric: tabular-nums; }
     .field label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .field-hint { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .field-hint.wide { grid-column: 1 / -1; }
     .field input, .field select { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #111a14; color: var(--text); }
     .voltage-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .voltage-options label { position: relative; }
@@ -169,6 +193,9 @@
       .calc-panel, .calc-results { padding: 26px; }
       .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .field.wide { grid-column: 1 / -1; }
+      .consumer-row { grid-template-columns: 1.2fr 1fr 1fr 1fr 42px; }
+      .remove-consumer { grid-column: auto; }
+      .month-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
     }
     @media (min-width: 1000px) {
       .gallery-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -295,30 +322,44 @@
 
     <section class="section" id="calculator">
       <div class="wrap">
-        <div class="section-head"><span class="eyebrow">Оценочный инструмент</span><h2>Калькулятор солнечного массива</h2><p>Введите параметры панелей и местную оценку солнечных часов. Для расчёта АКБ явно задайте желаемый резерв и коэффициенты — скрытых допущений нет.</p></div>
+        <div class="section-head"><span class="eyebrow">Оценочный инструмент</span><h2>Калькулятор солнечной системы</h2><p>Укажите город и фактическую нагрузку. Солнечный ресурс берётся из месячной сетки; расчёт остаётся предварительной оценкой.</p></div>
         <div class="calculator">
           <form class="calc-panel" id="calcForm">
-            <h3>Параметры системы</h3>
+            <h3>Место и потребители</h3>
             <div class="form-grid">
-              <div class="field"><label for="panelPower">Мощность панели, Вт</label><input id="panelPower" name="panelPower" type="number" min="50" max="1000" step="10" value="450" inputmode="numeric"></div>
-              <div class="field"><label for="panelCount">Количество панелей, шт.</label><input id="panelCount" name="panelCount" type="number" min="1" max="100" step="1" value="8" inputmode="numeric"></div>
-              <div class="field"><label for="sunHours">Солнечный эквивалент, ч/день</label><input id="sunHours" name="sunHours" type="number" min="0.1" max="12" step="0.1" value="4" inputmode="decimal"></div>
+              <div class="field wide"><label for="city">Город</label><input id="city" name="city" type="search" list="citySuggestions" autocomplete="off" placeholder="Например, Бахчисарай" required><datalist id="citySuggestions"></datalist><small class="field-hint">Поиск работает по встроенному локальному справочнику. GeoNames, CC BY 4.0.</small></div>
+              <div class="field"><label for="latitude">Широта объекта, °</label><input id="latitude" name="latitude" type="number" min="-90" max="90" step="0.00001" inputmode="decimal" placeholder="55.9667" aria-describedby="coordinatesHint"></div>
+              <div class="field"><label for="longitude">Долгота объекта, °</label><input id="longitude" name="longitude" type="number" min="-180" max="180" step="0.00001" inputmode="decimal" placeholder="43.0667" aria-describedby="coordinatesHint"></div>
+              <small class="field-hint wide" id="coordinatesHint">После выбора города подставим его координаты. Для точного места установки замените их своими координатами в десятичном формате. Например: 55°58′ с. ш. → 55.9667; 43°04′ в. д. → 43.0667.</small>
+            </div>
+            <p class="city-status" id="cityStatus" role="status" aria-live="polite"></p>
+            <div class="consumer-head"><h4>Приборы</h4><button class="button small-button" id="addConsumer" type="button">Добавить прибор</button></div>
+            <div class="consumer-list" id="consumerList"></div>
+            <h4 class="battery-heading">Параметры аккумулятора</h4>
+            <div class="form-grid">
               <div class="field"><label for="voltage">Напряжение АКБ, В</label><select id="voltage" name="voltage"><option value="">Выберите</option><option value="12">12 В</option><option value="24">24 В</option><option value="48">48 В</option></select></div>
-              <div class="field"><label for="days">Желаемый резерв, дней</label><input id="days" name="days" type="number" min="0.1" max="30" step="0.1" placeholder="Укажите сами" inputmode="decimal"></div>
-              <div class="field"><label for="dod">DoD, %</label><input id="dod" name="dod" type="number" min="1" max="100" step="1" placeholder="По паспорту АКБ" inputmode="numeric"></div>
-              <div class="field wide"><label for="derating">Температурный коэффициент, %</label><input id="derating" name="derating" type="number" min="1" max="100" step="1" placeholder="Укажите коэффициент системы" inputmode="numeric"></div>
+              <div class="field"><label for="inverterEfficiency">КПД инвертора, %</label><input id="inverterEfficiency" name="inverterEfficiency" type="number" min="1" max="100" step="1" inputmode="numeric" aria-describedby="inverterHint"><small id="inverterHint" class="field-hint">По паспорту инвертора; нужен для перевода нагрузки 220 В на сторону АКБ.</small></div>
+              <div class="field"><label for="days">Автономность, дней</label><input id="days" name="days" type="number" min="0.1" max="30" step="0.1" inputmode="decimal" aria-describedby="daysHint"><small class="field-hint" id="daysHint">Сколько суток объект должен работать от АКБ без солнечной подзарядки. Ориентир: 1 день для резерва, 2–3 дня для автономного дома, 3–5 дней для удалённого объекта. Выберите срок под свою задачу.</small></div>
+              <div class="field"><label for="dod">Допустимая глубина разряда АКБ (DoD), %</label><input id="dod" name="dod" type="number" min="1" max="100" step="1" inputmode="numeric" aria-describedby="dodHint"><small class="field-hint" id="dodHint">Какую долю заряда разрешено использовать. Значение смотрите в паспорте батареи. Примеры для оценки: LiFePO₄ — 80–90%, AGM/GEL — около 50%; точный предел зависит от модели.</small></div>
+              <div class="field"><label for="derating">Доступная ёмкость с учётом температуры, %</label><input id="derating" name="derating" type="number" min="1" max="100" step="1" inputmode="numeric" aria-describedby="deratingHint"><small class="field-hint" id="deratingHint">Какую долю паспортной ёмкости АКБ реально ожидать при температуре её установки. Сверьтесь с паспортом: в тёплом помещении ориентир 95–100%, в холодном неотапливаемом месте — 80–90% или ниже.</small></div>
             </div>
           </form>
-          <div class="calc-results" aria-live="polite">
+          <div class="calc-results" aria-live="polite" aria-atomic="true">
             <h3>Оценка</h3>
+            <p class="grid-status" id="gridStatus" role="status" aria-live="polite">Данные солнечной сетки не загружены.</p>
+            <section class="solar-profile" id="solarProfile" hidden aria-labelledby="solarProfileTitle">
+              <h4 id="solarProfileTitle">Месячные данные сетки Kt</h4>
+              <p class="formula-note">Kt — индекс солнечного ресурса, не готовая выработка в кВт·ч.</p>
+              <div class="month-grid" id="monthGrid"></div>
+            </section>
             <div class="results-grid">
-              <div class="result"><span>Пиковая мощность массива</span><strong id="totalPower">—</strong></div>
-              <div class="result"><span>Ориентир площади</span><strong id="arrayArea">—</strong></div>
-              <div class="result"><span>Суточная выработка</span><strong id="dailyEnergy">—</strong></div>
+              <div class="result"><span>Потребление в сутки</span><strong id="dailyEnergy">—</strong></div>
+              <div class="result"><span>Сумма мощности приборов</span><strong id="peakLoad">—</strong></div>
+              <div class="result"><span>Состояние солнечного ресурса</span><strong id="arrayPower">Выберите город</strong></div>
               <div class="result"><span>Ёмкость АКБ</span><strong id="batteryCapacity">Заполните поля</strong></div>
             </div>
             <p class="formula"><strong>АКБ:</strong> C = (E<sub>day</sub> × Days) / (U<sub>sys</sub> × DoD × T<sub>derating</sub>)</p>
-            <p class="formula-note">В оценке выработки используется коэффициент потерь 0,75. Площадь рассчитана по ориентиру 2 м² на панель 450 Вт. Для проектирования нужны фактические характеристики оборудования, площадки и нагрузки.</p>
+            <p class="formula-note">E<sub>day</sub> в формуле АКБ учитывает КПД инвертора и выражен на стороне аккумулятора. K_loss = 0,75 относится к оценке выработки массива. Результат предварительный; затенение, состояние крыши и совместимость оборудования требуют отдельной оценки.</p>
           </div>
         </div>
       </div>
@@ -348,95 +389,7 @@
     <div class="lightbox-image-wrap"><img id="lightboxImage" alt=""></div>
     <div class="lightbox-bar"><div class="lightbox-caption" id="lightboxCaption"></div><div class="lightbox-controls"><button class="icon-button" id="previousPhoto" type="button" aria-label="Предыдущая фотография">←</button><button class="icon-button" id="nextPhoto" type="button" aria-label="Следующая фотография">→</button><button class="icon-button" id="closeLightbox" type="button" aria-label="Закрыть">×</button></div></div>
   </dialog>
-  <script>
-    (() => {
-      const STORAGE_KEY = 'solar-guide-state-v1';
-      const form = document.getElementById('calcForm');
-      const savedState = (() => {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
-        catch { return {}; }
-      })();
-
-      for (const field of form.elements) {
-        if (field.name && Object.hasOwn(savedState, field.name)) field.value = savedState[field.name];
-      }
-
-      function updateCalculator() {
-        const panelPower = Number(form.elements.panelPower.value);
-        const count = Number(form.elements.panelCount.value);
-        const sunHours = Number(form.elements.sunHours.value);
-        const totalW = panelPower * count;
-        const dailyKwh = totalW / 1000 * sunHours * 0.75;
-        document.getElementById('totalPower').textContent = Number.isFinite(totalW) && totalW > 0 ? `${(totalW / 1000).toFixed(2)} кВт` : '—';
-        document.getElementById('arrayArea').textContent = Number.isFinite(totalW) && totalW > 0 ? `${(count * panelPower / 450 * 2).toFixed(1)} м²` : '—';
-        document.getElementById('dailyEnergy').textContent = Number.isFinite(dailyKwh) && dailyKwh > 0 ? `${dailyKwh.toFixed(2)} кВт·ч` : '—';
-
-        const voltage = Number(form.elements.voltage.value);
-        const days = Number(form.elements.days.value);
-        const dod = Number(form.elements.dod.value) / 100;
-        const derating = Number(form.elements.derating.value) / 100;
-        const ready = voltage > 0 && days > 0 && dod > 0 && dod <= 1 && derating > 0 && derating <= 1 && dailyKwh > 0;
-        document.getElementById('batteryCapacity').textContent = ready
-          ? `${Math.ceil(dailyKwh * 1000 * days / (voltage * dod * derating))} А·ч`
-          : 'Заполните поля';
-
-        const state = Object.fromEntries([...form.elements].filter(field => field.name).map(field => [field.name, field.value]));
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
-      }
-      form.addEventListener('input', updateCalculator);
-      form.addEventListener('change', updateCalculator);
-      updateCalculator();
-
-      document.querySelectorAll('[data-check]').forEach(input => {
-        const key = `solar-check-${input.dataset.check}`;
-        try { input.checked = localStorage.getItem(key) === 'true'; } catch {}
-        input.addEventListener('change', () => { try { localStorage.setItem(key, String(input.checked)); } catch {} });
-      });
-
-      const menuToggle = document.getElementById('menuToggle');
-      const mainNav = document.getElementById('mainNav');
-      menuToggle.addEventListener('click', () => {
-        const expanded = menuToggle.getAttribute('aria-expanded') === 'true';
-        menuToggle.setAttribute('aria-expanded', String(!expanded));
-        menuToggle.setAttribute('aria-label', expanded ? 'Открыть меню' : 'Закрыть меню');
-        mainNav.classList.toggle('open', !expanded);
-      });
-      mainNav.addEventListener('click', event => {
-        if (event.target.closest('a')) {
-          mainNav.classList.remove('open');
-          menuToggle.setAttribute('aria-expanded', 'false');
-          menuToggle.setAttribute('aria-label', 'Открыть меню');
-        }
-      });
-
-      const cards = [...document.querySelectorAll('.photo-card')];
-      const dialog = document.getElementById('lightbox');
-      const image = document.getElementById('lightboxImage');
-      const caption = document.getElementById('lightboxCaption');
-      let activeIndex = 0;
-      function showPhoto(index) {
-        activeIndex = (index + cards.length) % cards.length;
-        const card = cards[activeIndex];
-        image.src = card.dataset.full;
-        image.alt = card.querySelector('img').alt;
-        caption.textContent = `${card.dataset.title} · ${activeIndex + 1} из ${cards.length}`;
-      }
-      cards.forEach((card, index) => card.addEventListener('click', () => {
-        showPhoto(index);
-        dialog.showModal();
-        document.body.classList.add('dialog-open');
-      }));
-      function closeDialog() { dialog.close(); document.body.classList.remove('dialog-open'); }
-      document.getElementById('closeLightbox').addEventListener('click', closeDialog);
-      document.getElementById('previousPhoto').addEventListener('click', () => showPhoto(activeIndex - 1));
-      document.getElementById('nextPhoto').addEventListener('click', () => showPhoto(activeIndex + 1));
-      dialog.addEventListener('close', () => document.body.classList.remove('dialog-open'));
-      dialog.addEventListener('click', event => { if (event.target === dialog) closeDialog(); });
-      dialog.addEventListener('keydown', event => {
-        if (event.key === 'ArrowLeft') showPhoto(activeIndex - 1);
-        if (event.key === 'ArrowRight') showPhoto(activeIndex + 1);
-      });
-    })();
-  </script>
+  <script defer src="assets/js/solar-calculator.js"></script>
+  <script defer src="assets/js/site.js"></script>
 </body>
 </html>

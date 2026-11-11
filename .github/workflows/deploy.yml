@@ -30,6 +30,8 @@ jobs:
           mkdir _site
           cp index.html favicon.svg robots.txt sitemap.xml _site/
           cp -R img _site/
+          cp -R assets _site/
+          if [ -f grid.bin ]; then cp grid.bin _site/; fi
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
