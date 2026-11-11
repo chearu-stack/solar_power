@@ -232,7 +232,7 @@
       </a>
       <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="mainNav" aria-label="Открыть меню">☰</button>
       <nav class="nav" id="mainNav" aria-label="Основная навигация">
-        <a href="#story">История</a><a href="#gallery">Фото</a><a href="#guide">Этапы</a><a href="#calculator">Расчёт</a><a href="#checklist">Список</a>
+        <a href="#story">История</a><a href="#gallery">Фото</a><a href="#guide">Этапы</a><a href="#calculator">Оценочный инструмент</a><a href="#checklist">Список</a><a href="#consultation">Консультации</a>
       </nav>
     </div>
   </header>
@@ -322,7 +322,7 @@
 
     <section class="section" id="calculator">
       <div class="wrap">
-        <div class="section-head"><span class="eyebrow">Оценочный инструмент</span><h2>Калькулятор солнечной системы</h2><p>Укажите город и фактическую нагрузку. Солнечный ресурс берётся из месячной сетки; расчёт остаётся предварительной оценкой.</p></div>
+        <div class="section-head"><span class="eyebrow">Оценочный инструмент</span><h2>Инженерный калькулятор автономной солнечной электростанции</h2><p>Укажите город, фактическую нагрузку и характеристики панели. Калькулятор оценит рекомендуемое количество модулей по самому слабому месяцу имеющейся солнечной сетки.</p></div>
         <div class="calculator">
           <form class="calc-panel" id="calcForm">
             <h3>Место и потребители</h3>
@@ -335,6 +335,13 @@
             <p class="city-status" id="cityStatus" role="status" aria-live="polite"></p>
             <div class="consumer-head"><h4>Приборы</h4><button class="button small-button" id="addConsumer" type="button">Добавить прибор</button></div>
             <div class="consumer-list" id="consumerList"></div>
+            <h4 class="battery-heading">Характеристики вашей панели</h4>
+            <div class="form-grid">
+              <div class="field"><label for="panelPower">Мощность одной панели, Вт</label><input id="panelPower" name="panelPower" type="number" min="1" max="2000" step="1" inputmode="numeric" required></div>
+              <div class="field"><label for="panelLength">Длина панели, мм</label><input id="panelLength" name="panelLength" type="number" min="1" max="5000" step="1" inputmode="numeric" required></div>
+              <div class="field"><label for="panelWidth">Ширина панели, мм</label><input id="panelWidth" name="panelWidth" type="number" min="1" max="5000" step="1" inputmode="numeric" required></div>
+              <small class="field-hint wide">Возьмите мощность и габариты из паспорта выбранной модели. Универсального стандартного размера и мощности нет.</small>
+            </div>
             <h4 class="battery-heading">Параметры аккумулятора</h4>
             <div class="form-grid">
               <div class="field"><label for="voltage">Напряжение АКБ, В</label><select id="voltage" name="voltage"><option value="">Выберите</option><option value="12">12 В</option><option value="24">24 В</option><option value="48">48 В</option></select></div>
@@ -343,21 +350,26 @@
               <div class="field"><label for="dod">Допустимая глубина разряда АКБ (DoD), %</label><input id="dod" name="dod" type="number" min="1" max="100" step="1" inputmode="numeric" aria-describedby="dodHint"><small class="field-hint" id="dodHint">Какую долю заряда разрешено использовать. Значение смотрите в паспорте батареи. Примеры для оценки: LiFePO₄ — 80–90%, AGM/GEL — около 50%; точный предел зависит от модели.</small></div>
               <div class="field"><label for="derating">Доступная ёмкость с учётом температуры, %</label><input id="derating" name="derating" type="number" min="1" max="100" step="1" inputmode="numeric" aria-describedby="deratingHint"><small class="field-hint" id="deratingHint">Какую долю паспортной ёмкости АКБ реально ожидать при температуре её установки. Сверьтесь с паспортом: в тёплом помещении ориентир 95–100%, в холодном неотапливаемом месте — 80–90% или ниже.</small></div>
             </div>
+            <button class="button" type="submit">Рассчитать систему</button>
           </form>
           <div class="calc-results" aria-live="polite" aria-atomic="true">
             <h3>Оценка</h3>
             <p class="grid-status" id="gridStatus" role="status" aria-live="polite">Данные солнечной сетки не загружены.</p>
             <section class="solar-profile" id="solarProfile" hidden aria-labelledby="solarProfileTitle">
-              <h4 id="solarProfileTitle">Месячные данные сетки Kt</h4>
-              <p class="formula-note">Kt — индекс солнечного ресурса, не готовая выработка в кВт·ч.</p>
-              <div class="month-grid" id="monthGrid"></div>
+              <h4 id="solarProfileTitle">Солнечный ресурс по месяцам, кВт·ч/м²·сут</h4>
+              <div class="month-grid" id="planeIrradianceGrid"></div>
             </section>
             <div class="results-grid">
               <div class="result"><span>Потребление в сутки</span><strong id="dailyEnergy">—</strong></div>
               <div class="result"><span>Сумма мощности приборов</span><strong id="peakLoad">—</strong></div>
-              <div class="result"><span>Состояние солнечного ресурса</span><strong id="arrayPower">Выберите город</strong></div>
+              <div class="result"><span>Солнечный ресурс, кВт·ч/м² в сутки</span><strong id="arrayPower">Выберите город</strong></div>
+              <div class="result"><span>Расчётный месяц</span><strong id="designMonth">—</strong></div>
+              <div class="result"><span>Рекомендуемое количество панелей</span><strong id="panelCount">Заполните нагрузку и параметры панели</strong></div>
+              <div class="result"><span>Мощность массива</span><strong id="panelArrayPower">—</strong></div>
+              <div class="result"><span>Площадь самих модулей</span><strong id="panelArea">—</strong></div>
               <div class="result"><span>Ёмкость АКБ</span><strong id="batteryCapacity">Заполните поля</strong></div>
             </div>
+            <p class="formula-note">Количество панелей рассчитано для среднего дня самого слабого месяца по солнечной энергии. Это предварительная оценка: она не учитывает затенение, конкретный скат крыши и запас на восстановление АКБ после пасмурного периода.</p>
             <p class="formula"><strong>АКБ:</strong> C = (E<sub>day</sub> × Days) / (U<sub>sys</sub> × DoD × T<sub>derating</sub>)</p>
             <p class="formula-note">E<sub>day</sub> в формуле АКБ учитывает КПД инвертора и выражен на стороне аккумулятора. K_loss = 0,75 относится к оценке выработки массива. Результат предварительный; затенение, состояние крыши и совместимость оборудования требуют отдельной оценки.</p>
           </div>
@@ -377,6 +389,16 @@
         </div>
       </div>
     </section>
+    <section class="section" id="consultation">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Связаться с автором</span>
+          <h2>Консультации и расчёты</h2>
+          <p>Частные инженерные задачи по off-grid объектам. Профессиональный интерес вне основной занятости, условия обсуждаются лично.</p>
+          <p>Email: <a href="mailto:azat.volna@gmail.com">azat.volna@gmail.com</a></p>
+        </div>
+      </div>
+    </section>
   </main>
   <footer class="footer">
     <div class="wrap">
@@ -389,6 +411,7 @@
     <div class="lightbox-image-wrap"><img id="lightboxImage" alt=""></div>
     <div class="lightbox-bar"><div class="lightbox-caption" id="lightboxCaption"></div><div class="lightbox-controls"><button class="icon-button" id="previousPhoto" type="button" aria-label="Предыдущая фотография">←</button><button class="icon-button" id="nextPhoto" type="button" aria-label="Следующая фотография">→</button><button class="icon-button" id="closeLightbox" type="button" aria-label="Закрыть">×</button></div></div>
   </dialog>
+  <script defer src="assets/js/solar-resource.js"></script>
   <script defer src="assets/js/solar-calculator.js"></script>
   <script defer src="assets/js/site.js"></script>
 </body>

@@ -5,6 +5,7 @@
   const MONTH_COUNT = 12;
   const MONTH_LABELS = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
   let activeGrid = null;
+  let activePlaneIrradiance = null;
   let cityPlaces = null;
   let cityPlacesPromise = null;
   const cityOptions = new Map();
@@ -181,36 +182,46 @@
 
   function renderMonthlyProfile(place, profile, latitude = Number(place[2]), longitude = Number(place[3])) {
     const profileElement = document.getElementById('solarProfile');
-    const monthGrid = document.getElementById('monthGrid');
+    const irradianceGrid = document.getElementById('planeIrradianceGrid');
     const cityStatus = document.getElementById('cityStatus');
     const arrayPower = document.getElementById('arrayPower');
-    if (!profileElement || !monthGrid || !cityStatus) return;
+    if (!profileElement || !irradianceGrid || !cityStatus) return;
 
-    const hasNoSolarDataMonth = profile.some(value => value === null);
-    monthGrid.replaceChildren();
+    activePlaneIrradiance = window.SolarResource?.monthlyPlaneIrradiance(profile, latitude) || null;
+    irradianceGrid.replaceChildren();
     profile.forEach((value, index) => {
-      const cell = document.createElement('div');
-      cell.className = 'month-cell';
-      const label = document.createElement('strong');
-      label.textContent = MONTH_LABELS[index];
-      const reading = document.createElement('span');
-      reading.textContent = value === null ? '—' : value.toFixed(3);
-      reading.setAttribute('aria-label', value === null ? `${MONTH_LABELS[index]}: нет данных Kt` : `${MONTH_LABELS[index]}: Kt ${value.toFixed(3)}`);
-      cell.append(label, reading);
-      monthGrid.append(cell);
+      const irradianceCell = document.createElement('div');
+      irradianceCell.className = 'month-cell';
+      const irradianceLabel = document.createElement('strong');
+      irradianceLabel.textContent = MONTH_LABELS[index];
+      const irradianceReading = document.createElement('span');
+      const irradiation = activePlaneIrradiance?.[index];
+      irradianceReading.textContent = Number.isFinite(irradiation) ? irradiation.toFixed(2) : '—';
+      irradianceCell.append(irradianceLabel, irradianceReading);
+      irradianceGrid.append(irradianceCell);
     });
     profileElement.hidden = false;
 
-    if (hasNoSolarDataMonth) {
+    if (!activePlaneIrradiance || activePlaneIrradiance.some(value => value === null)) {
       cityStatus.className = 'city-status warning';
-      cityStatus.textContent = 'Зона не рассчитана на световую энергетику.';
-      if (arrayPower) arrayPower.textContent = cityStatus.textContent;
+      cityStatus.textContent = 'Для одного или нескольких месяцев нет данных сетки; круглогодичный подбор панелей невозможен.';
+      if (arrayPower) arrayPower.textContent = 'Нет полного годового профиля';
+      window.dispatchEvent(new Event('solar:profile-updated'));
+      return;
+    }
+
+    if (activePlaneIrradiance.some(value => value === 0)) {
+      cityStatus.className = 'city-status warning';
+      cityStatus.textContent = 'В одном или нескольких месяцах расчётный ресурс равен нулю: круглогодичное покрытие только солнечными панелями здесь не подтверждается.';
+      if (arrayPower) arrayPower.textContent = 'Есть месяц без расчётного ресурса';
+      window.dispatchEvent(new Event('solar:profile-updated'));
       return;
     }
 
     cityStatus.className = 'city-status';
-    cityStatus.textContent = `Kt-сетка подключена для ${cityDisplayName(place)}, ${cityAreaLabel(place)}. Точка расчёта: ${latitude.toFixed(5)}°, ${longitude.toFixed(5)}°.`;
-    if (arrayPower) arrayPower.textContent = 'Kt по месяцам загружен';
+    cityStatus.textContent = `Солнечные данные загружены для ${cityDisplayName(place)}, ${cityAreaLabel(place)}. Точка расчёта: ${latitude.toFixed(5)}°, ${longitude.toFixed(5)}°.`;
+    if (arrayPower) arrayPower.textContent = 'Годовой профиль рассчитан';
+    window.dispatchEvent(new Event('solar:profile-updated'));
   }
 
   function renderLocationAtCoordinates(place, latitudeField, longitudeField) {
@@ -225,9 +236,11 @@
       || !Number.isFinite(latitude) || !Number.isFinite(longitude)
       || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
       cityStatus.className = 'city-status warning';
+      activePlaneIrradiance = null;
       cityStatus.textContent = 'Проверьте широту и долготу: широта от −90° до 90°, долгота от −180° до 180°.';
       profileElement.hidden = true;
       if (arrayPower) arrayPower.textContent = 'Проверьте координаты';
+      window.dispatchEvent(new Event('solar:profile-updated'));
       return;
     }
 
@@ -235,9 +248,11 @@
     const profile = sampleMonthlyKt(activeGrid, latitude, longitude);
     if (!profile) {
       cityStatus.className = 'city-status warning';
+      activePlaneIrradiance = null;
       cityStatus.textContent = 'Для этих координат нет покрытия в солнечной сетке.';
       profileElement.hidden = true;
       if (arrayPower) arrayPower.textContent = 'Нет покрытия сетки';
+      window.dispatchEvent(new Event('solar:profile-updated'));
       return;
     }
     renderMonthlyProfile(place, profile, latitude, longitude);
@@ -246,15 +261,15 @@
   async function updateCityLocation(value) {
     const cityStatus = document.getElementById('cityStatus');
     const profileElement = document.getElementById('solarProfile');
-    const monthGrid = document.getElementById('monthGrid');
     const arrayPower = document.getElementById('arrayPower');
     if (!cityStatus) return;
     if (!value) {
+      activePlaneIrradiance = null;
       cityStatus.className = 'city-status';
       cityStatus.textContent = '';
       if (profileElement) profileElement.hidden = true;
-      monthGrid?.replaceChildren();
       if (arrayPower) arrayPower.textContent = 'Выберите город';
+      window.dispatchEvent(new Event('solar:profile-updated'));
       return;
     }
     try {
@@ -264,17 +279,21 @@
       if (!selected) renderCitySuggestions(value, places);
       const exact = selected ? [selected] : findExactCity(value, places);
       if (exact.length > 1) {
+        activePlaneIrradiance = null;
         cityStatus.className = 'city-status';
         cityStatus.textContent = 'Найдено несколько населённых пунктов. Выберите вариант с нужным регионом и координатами.';
         if (profileElement) profileElement.hidden = true;
         if (arrayPower) arrayPower.textContent = 'Уточните город';
+        window.dispatchEvent(new Event('solar:profile-updated'));
         return;
       }
       if (!exact.length) {
+        activePlaneIrradiance = null;
         cityStatus.className = 'city-status';
         cityStatus.textContent = normalizeCityName(value).length >= 3 ? 'Город не найден в локальном справочнике.' : '';
         if (profileElement) profileElement.hidden = true;
         if (arrayPower) arrayPower.textContent = 'Город не найден';
+        window.dispatchEvent(new Event('solar:profile-updated'));
         return;
       }
       const place = exact[0];
@@ -292,12 +311,19 @@
     }
   }
 
+  function parseLocalizedNumber(value) {
+    const normalized = String(value ?? '').trim().replace(/\s/g, '').replace(',', '.');
+    if (!normalized) return null;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
   function dailyConsumptionKwh(consumers) {
     return consumers.reduce((sum, item) => {
-      const power = Number(item.powerW);
-      const count = Number(item.count);
-      const hours = Number(item.hoursPerDay);
-      if (![power, count, hours].every(Number.isFinite) || power < 0 || count < 0 || hours < 0) {
+      const power = parseLocalizedNumber(item.powerW);
+      const count = parseLocalizedNumber(item.count);
+      const hours = parseLocalizedNumber(item.hoursPerDay);
+      if ([power, count, hours].some(value => value === null) || power < 0 || count < 0 || hours < 0) {
         throw new RangeError('Consumer values must be non-negative numbers');
       }
       return sum + power * count * hours / 1000;
@@ -328,7 +354,7 @@
       row.className = 'consumer-row';
       row.innerHTML = `
         <label>Прибор<input data-consumer="label" type="text" maxlength="60" placeholder="Например, холодильник"></label>
-        <label>Мощность, Вт<input data-consumer="powerW" type="number" min="0" max="20000" step="1" inputmode="numeric"></label>
+        <label>Мощность, Вт<input data-consumer="powerW" type="number" min="0" max="20000" step="0.1" inputmode="decimal"></label>
         <label>Количество<input data-consumer="count" type="number" min="0" max="100" step="1" inputmode="numeric"></label>
         <label>Часов в день<input data-consumer="hoursPerDay" type="number" min="0" max="24" step="0.1" inputmode="decimal"></label>
         <button class="icon-button remove-consumer" type="button" aria-label="Удалить прибор">×</button>`;
@@ -356,31 +382,72 @@
       const consumersValid = active.length > 0
         && complete.length === active.length
         && [...list.querySelectorAll('input[type="number"]')].every(input => input.value === '' || input.validity.valid)
-        && complete.every(item => Number(item.powerW) > 0 && Number(item.count) > 0 && Number(item.hoursPerDay) > 0);
+        && complete.every(item => [item.powerW, item.count, item.hoursPerDay].every(value => parseLocalizedNumber(value) > 0));
       let energyKwh = null;
       let connectedPowerW = null;
       try {
         if (consumersValid) {
           energyKwh = dailyConsumptionKwh(complete);
-          connectedPowerW = complete.reduce((sum, item) => sum + Number(item.powerW) * Number(item.count), 0);
+          connectedPowerW = complete.reduce((sum, item) => sum + parseLocalizedNumber(item.powerW) * parseLocalizedNumber(item.count), 0);
         }
       } catch {}
 
       const energyOutput = document.getElementById('dailyEnergy');
       const peakOutput = document.getElementById('peakLoad');
       const batteryOutput = document.getElementById('batteryCapacity');
+      const arrayResourceOutput = document.getElementById('arrayPower');
+      const designMonthOutput = document.getElementById('designMonth');
+      const panelCountOutput = document.getElementById('panelCount');
+      const panelPowerOutput = document.getElementById('panelArrayPower');
+      const panelAreaOutput = document.getElementById('panelArea');
       if (energyOutput) energyOutput.textContent = energyKwh > 0 ? `${energyKwh.toFixed(2)} кВт·ч` : 'Заполните приборы';
       if (peakOutput) peakOutput.textContent = connectedPowerW > 0 ? `${(connectedPowerW / 1000).toFixed(2)} кВт` : '—';
 
-      const inverterEfficiency = Number(form.elements.inverterEfficiency.value) / 100;
+      const inverterEfficiency = parseLocalizedNumber(form.elements.inverterEfficiency.value) / 100;
       const batteryAh = energyKwh > 0 && inverterEfficiency > 0 && inverterEfficiency <= 1 ? batteryCapacityAh({
         dailyEnergyWh: energyKwh * 1000 / inverterEfficiency,
-        days: Number(form.elements.days.value),
-        systemVoltage: Number(form.elements.voltage.value),
-        dod: Number(form.elements.dod.value) / 100,
-        temperatureFactor: Number(form.elements.derating.value) / 100,
+        days: parseLocalizedNumber(form.elements.days.value),
+        systemVoltage: parseLocalizedNumber(form.elements.voltage.value),
+        dod: parseLocalizedNumber(form.elements.dod.value) / 100,
+        temperatureFactor: parseLocalizedNumber(form.elements.derating.value) / 100,
       }) : null;
       if (batteryOutput) batteryOutput.textContent = batteryAh ? `${Math.ceil(batteryAh)} А·ч` : 'Заполните поля';
+
+      const panelEstimate = energyKwh > 0 && activePlaneIrradiance
+        && ['panelPower', 'panelLength', 'panelWidth'].every(name => form.elements[name].value !== '' && form.elements[name].validity.valid)
+        ? window.SolarResource?.recommendArray({
+          dailyEnergyKwh: energyKwh,
+          planeIrradiance: activePlaneIrradiance,
+          panelPowerW: parseLocalizedNumber(form.elements.panelPower.value),
+          panelLengthMm: parseLocalizedNumber(form.elements.panelLength.value),
+          panelWidthMm: parseLocalizedNumber(form.elements.panelWidth.value),
+        })
+        : null;
+      if (panelEstimate) {
+        if (arrayResourceOutput) arrayResourceOutput.textContent = `${panelEstimate.planeIrradiance.toFixed(2)} кВт·ч/м²·сут`;
+        if (designMonthOutput) designMonthOutput.textContent = MONTH_LABELS[panelEstimate.designMonth];
+        if (panelCountOutput) panelCountOutput.textContent = `${panelEstimate.panelCount} шт.`;
+        if (panelPowerOutput) panelPowerOutput.textContent = `${panelEstimate.installedPowerKw.toFixed(2)} кВтп`;
+        if (panelAreaOutput) panelAreaOutput.textContent = `${panelEstimate.moduleAreaM2.toFixed(2)} м²`;
+      } else {
+        if (arrayResourceOutput && activePlaneIrradiance?.every(Number.isFinite)) {
+          const lowestResource = Math.min(...activePlaneIrradiance);
+          arrayResourceOutput.textContent = lowestResource > 0 ? `${lowestResource.toFixed(2)} кВт·ч/м²·сут` : 'Нет расчётного ресурса';
+        }
+        if (designMonthOutput) designMonthOutput.textContent = activePlaneIrradiance?.every(Number.isFinite)
+          ? MONTH_LABELS[activePlaneIrradiance.indexOf(Math.min(...activePlaneIrradiance))]
+          : 'Нет данных';
+        if (panelCountOutput) {
+          if (!activePlaneIrradiance) panelCountOutput.textContent = 'Сначала выберите город и загрузите сетку';
+          else if (activePlaneIrradiance.some(value => value === null || !Number.isFinite(value))) {
+            panelCountOutput.textContent = 'Недостаточно данных сетки за один или несколько месяцев';
+          } else if (activePlaneIrradiance.some(value => value === 0)) {
+            panelCountOutput.textContent = 'Зона не рассчитана на круглогодичное питание только от солнца';
+          } else panelCountOutput.textContent = 'Заполните нагрузку и паспорт панели';
+        }
+        if (panelPowerOutput) panelPowerOutput.textContent = '—';
+        if (panelAreaOutput) panelAreaOutput.textContent = '—';
+      }
 
       const state = Object.fromEntries([...form.querySelectorAll('[name]')].map(field => [field.name, field.value]));
       state.consumers = consumers;
@@ -388,7 +455,11 @@
     }
 
     document.getElementById('addConsumer')?.addEventListener('click', () => { addConsumer(); update(); });
-    form.addEventListener('submit', event => event.preventDefault());
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      update();
+      document.querySelector('.calc-results')?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    });
     list.addEventListener('click', event => {
       if (!event.target.closest('.remove-consumer')) return;
       if (list.children.length > 1) event.target.closest('.consumer-row').remove();
@@ -396,6 +467,7 @@
     });
     form.addEventListener('input', update);
     form.addEventListener('change', update);
+    window.addEventListener('solar:profile-updated', update);
     const cityField = document.getElementById('city');
     const latitudeField = document.getElementById('latitude');
     const longitudeField = document.getElementById('longitude');
