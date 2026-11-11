@@ -4,6 +4,7 @@
   const HEADER_BYTES = 16;
   const MONTH_COUNT = 12;
   const MONTH_LABELS = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+  const MONTH_NAMES = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
   let activeGrid = null;
   let activePlaneIrradiance = null;
   let cityPlaces = null;
@@ -184,50 +185,46 @@
     const profileElement = document.getElementById('solarProfile');
     const irradianceGrid = document.getElementById('planeIrradianceGrid');
     const cityStatus = document.getElementById('cityStatus');
-    const arrayPower = document.getElementById('arrayPower');
     if (!profileElement || !irradianceGrid || !cityStatus) return;
 
     activePlaneIrradiance = window.SolarResource?.monthlyPlaneIrradiance(profile, latitude) || null;
     irradianceGrid.replaceChildren();
-    profile.forEach((value, index) => {
-      const irradianceCell = document.createElement('div');
-      irradianceCell.className = 'month-cell';
-      const irradianceLabel = document.createElement('strong');
-      irradianceLabel.textContent = MONTH_LABELS[index];
-      const irradianceReading = document.createElement('span');
-      const irradiation = activePlaneIrradiance?.[index];
-      irradianceReading.textContent = Number.isFinite(irradiation) ? irradiation.toFixed(2) : '—';
-      irradianceCell.append(irradianceLabel, irradianceReading);
-      irradianceGrid.append(irradianceCell);
+    MONTH_LABELS.forEach((month, index) => {
+      const monthCell = document.createElement('div');
+      monthCell.className = 'month-cell';
+      monthCell.dataset.monthIndex = String(index);
+      const monthLabel = document.createElement('strong');
+      monthLabel.textContent = month;
+      const resourceReading = document.createElement('span');
+      resourceReading.className = 'month-resource';
+      resourceReading.textContent = Number.isFinite(activePlaneIrradiance?.[index])
+        ? activePlaneIrradiance[index].toFixed(3)
+        : '—';
+      const panelCountReading = document.createElement('span');
+      panelCountReading.className = 'month-panel-count';
+      panelCountReading.dataset.monthPanels = '';
+      panelCountReading.textContent = 'панелей: —';
+      monthCell.append(monthLabel, resourceReading, panelCountReading);
+      irradianceGrid.append(monthCell);
     });
     profileElement.hidden = false;
 
     if (!activePlaneIrradiance || activePlaneIrradiance.some(value => value === null)) {
       cityStatus.className = 'city-status warning';
-      cityStatus.textContent = 'Для одного или нескольких месяцев нет данных сетки; круглогодичный подбор панелей невозможен.';
-      if (arrayPower) arrayPower.textContent = 'Нет полного годового профиля';
-      window.dispatchEvent(new Event('solar:profile-updated'));
-      return;
-    }
-
-    if (activePlaneIrradiance.some(value => value === 0)) {
+      cityStatus.textContent = 'Для некоторых месяцев нет данных сетки. Расчёт доступен только для периода с полными данными.';
+    } else if (activePlaneIrradiance.some(value => value === 0)) {
       cityStatus.className = 'city-status warning';
-      cityStatus.textContent = 'В одном или нескольких месяцах расчётный ресурс равен нулю: круглогодичное покрытие только солнечными панелями здесь не подтверждается.';
-      if (arrayPower) arrayPower.textContent = 'Есть месяц без расчётного ресурса';
-      window.dispatchEvent(new Event('solar:profile-updated'));
-      return;
+      cityStatus.textContent = 'В некоторые месяцы расчётный солнечный ресурс равен нулю.';
+    } else {
+      cityStatus.className = 'city-status';
+      cityStatus.textContent = `Солнечные данные загружены для ${cityDisplayName(place)}, ${cityAreaLabel(place)}. Точка расчёта: ${latitude.toFixed(5)}°, ${longitude.toFixed(5)}°.`;
     }
-
-    cityStatus.className = 'city-status';
-    cityStatus.textContent = `Солнечные данные загружены для ${cityDisplayName(place)}, ${cityAreaLabel(place)}. Точка расчёта: ${latitude.toFixed(5)}°, ${longitude.toFixed(5)}°.`;
-    if (arrayPower) arrayPower.textContent = 'Годовой профиль рассчитан';
     window.dispatchEvent(new Event('solar:profile-updated'));
   }
 
   function renderLocationAtCoordinates(place, latitudeField, longitudeField) {
     const cityStatus = document.getElementById('cityStatus');
     const profileElement = document.getElementById('solarProfile');
-    const arrayPower = document.getElementById('arrayPower');
     const latitude = Number(latitudeField?.value);
     const longitude = Number(longitudeField?.value);
     if (!cityStatus || !profileElement) return;
@@ -239,7 +236,6 @@
       activePlaneIrradiance = null;
       cityStatus.textContent = 'Проверьте широту и долготу: широта от −90° до 90°, долгота от −180° до 180°.';
       profileElement.hidden = true;
-      if (arrayPower) arrayPower.textContent = 'Проверьте координаты';
       window.dispatchEvent(new Event('solar:profile-updated'));
       return;
     }
@@ -251,7 +247,6 @@
       activePlaneIrradiance = null;
       cityStatus.textContent = 'Для этих координат нет покрытия в солнечной сетке.';
       profileElement.hidden = true;
-      if (arrayPower) arrayPower.textContent = 'Нет покрытия сетки';
       window.dispatchEvent(new Event('solar:profile-updated'));
       return;
     }
@@ -261,14 +256,12 @@
   async function updateCityLocation(value) {
     const cityStatus = document.getElementById('cityStatus');
     const profileElement = document.getElementById('solarProfile');
-    const arrayPower = document.getElementById('arrayPower');
     if (!cityStatus) return;
     if (!value) {
       activePlaneIrradiance = null;
       cityStatus.className = 'city-status';
       cityStatus.textContent = '';
       if (profileElement) profileElement.hidden = true;
-      if (arrayPower) arrayPower.textContent = 'Выберите город';
       window.dispatchEvent(new Event('solar:profile-updated'));
       return;
     }
@@ -283,7 +276,6 @@
         cityStatus.className = 'city-status';
         cityStatus.textContent = 'Найдено несколько населённых пунктов. Выберите вариант с нужным регионом и координатами.';
         if (profileElement) profileElement.hidden = true;
-        if (arrayPower) arrayPower.textContent = 'Уточните город';
         window.dispatchEvent(new Event('solar:profile-updated'));
         return;
       }
@@ -292,7 +284,6 @@
         cityStatus.className = 'city-status';
         cityStatus.textContent = normalizeCityName(value).length >= 3 ? 'Город не найден в локальном справочнике.' : '';
         if (profileElement) profileElement.hidden = true;
-        if (arrayPower) arrayPower.textContent = 'Город не найден';
         window.dispatchEvent(new Event('solar:profile-updated'));
         return;
       }
@@ -307,7 +298,8 @@
       cityStatus.className = 'city-status';
       cityStatus.textContent = 'Локальный справочник городов не загружен.';
       if (profileElement) profileElement.hidden = true;
-      if (arrayPower) arrayPower.textContent = 'Нет справочника городов';
+      activePlaneIrradiance = null;
+      window.dispatchEvent(new Event('solar:profile-updated'));
     }
   }
 
@@ -370,6 +362,13 @@
       if (Object.hasOwn(saved, field.name)) field.value = saved[field.name];
     }
 
+    const periodField = form.elements.solarPeriod;
+    const monthField = document.getElementById('solarMonthField');
+    function syncPeriodControls() {
+      if (monthField) monthField.hidden = periodField.value !== 'month';
+    }
+    syncPeriodControls();
+
     function update() {
       const consumers = [...list.querySelectorAll('.consumer-row')].map(row => ({
         label: row.querySelector('[data-consumer="label"]').value,
@@ -395,11 +394,11 @@
       const energyOutput = document.getElementById('dailyEnergy');
       const peakOutput = document.getElementById('peakLoad');
       const batteryOutput = document.getElementById('batteryCapacity');
-      const arrayResourceOutput = document.getElementById('arrayPower');
       const designMonthOutput = document.getElementById('designMonth');
       const panelCountOutput = document.getElementById('panelCount');
       const panelPowerOutput = document.getElementById('panelArrayPower');
       const panelAreaOutput = document.getElementById('panelArea');
+      const periodNotice = document.getElementById('solarPeriodNotice');
       if (energyOutput) energyOutput.textContent = energyKwh > 0 ? `${energyKwh.toFixed(2)} кВт·ч` : 'Заполните приборы';
       if (peakOutput) peakOutput.textContent = connectedPowerW > 0 ? `${(connectedPowerW / 1000).toFixed(2)} кВт` : '—';
 
@@ -413,37 +412,76 @@
       }) : null;
       if (batteryOutput) batteryOutput.textContent = batteryAh ? `${Math.ceil(batteryAh)} А·ч` : 'Заполните поля';
 
-      const panelEstimate = energyKwh > 0 && activePlaneIrradiance
-        && ['panelPower', 'panelLength', 'panelWidth'].every(name => form.elements[name].value !== '' && form.elements[name].validity.valid)
+      const periodMode = periodField.value || 'year';
+      const selectedMonth = parseLocalizedNumber(form.elements.solarMonth.value);
+      const selectedMonths = periodMode === 'month' && Number.isInteger(selectedMonth) && selectedMonth >= 0 && selectedMonth < MONTH_COUNT
+        ? [selectedMonth]
+        : periodMode === 'summer' ? [4, 5, 6, 7] : periodMode === 'year' ? Array.from({ length: MONTH_COUNT }, (_, index) => index) : [];
+      const panelFieldsValid = ['panelPower', 'panelLength', 'panelWidth']
+        .every(name => form.elements[name].value !== '' && form.elements[name].validity.valid);
+      const panelPowerW = parseLocalizedNumber(form.elements.panelPower.value);
+      const panelEstimate = energyKwh > 0 && activePlaneIrradiance && selectedMonths.length
+        && panelFieldsValid
         ? window.SolarResource?.recommendArray({
           dailyEnergyKwh: energyKwh,
           planeIrradiance: activePlaneIrradiance,
-          panelPowerW: parseLocalizedNumber(form.elements.panelPower.value),
+          panelPowerW,
           panelLengthMm: parseLocalizedNumber(form.elements.panelLength.value),
           panelWidthMm: parseLocalizedNumber(form.elements.panelWidth.value),
+          months: selectedMonths,
         })
         : null;
+
+      document.querySelectorAll('[data-month-index]').forEach(monthCard => {
+        const month = Number(monthCard.dataset.monthIndex);
+        const resource = activePlaneIrradiance?.[month];
+        const monthSizing = energyKwh > 0 && panelFieldsValid
+          ? window.SolarResource?.panelSizingForMonth({ dailyEnergyKwh: energyKwh, planeIrradiance: resource, panelPowerW })
+          : null;
+        const countOutput = monthCard.querySelector('[data-month-panels]');
+        if (countOutput) {
+          countOutput.textContent = monthSizing
+            ? `${monthSizing.panelCount} шт.`
+            : resource === 0 ? 'панелей: нет ресурса' : 'панелей: —';
+        }
+        monthCard.classList.toggle('is-selected-period', periodMode !== 'year' && selectedMonths.includes(month));
+      });
+
+      if (periodNotice) {
+        periodNotice.hidden = periodMode === 'year';
+        if (periodMode === 'month' && Number.isInteger(selectedMonth) && selectedMonth >= 0 && selectedMonth < MONTH_COUNT) {
+          const selectedMonthResource = activePlaneIrradiance?.[selectedMonth];
+          periodNotice.textContent = Number.isFinite(selectedMonthResource) && selectedMonthResource > 0
+            ? `Выбран месяц: ${MONTH_NAMES[selectedMonth]}. Результат относится к среднему дню месяца; для зимней эксплуатации при той же нагрузке потребуется резервный источник или расчёт на весь год.`
+            : `Для выбранного месяца (${MONTH_NAMES[selectedMonth]}) нет расчётного солнечного ресурса. Проверьте доступность данных сетки.`;
+        } else if (periodMode === 'summer') {
+          periodNotice.textContent = panelEstimate
+            ? `Расчёт выполнен для сезона май–август, по самому слабому месяцу — ${MONTH_NAMES[panelEstimate.designMonth]}. Для зимней эксплуатации при той же нагрузке потребуется резервный источник или расчёт на весь год.`
+            : 'Сезонный расчёт недоступен: проверьте нагрузку, панель и наличие данных за все месяцы сезона.';
+        } else if (periodMode === 'month') {
+          periodNotice.textContent = 'Выберите месяц для расчёта.';
+        }
+      }
+
       if (panelEstimate) {
-        if (arrayResourceOutput) arrayResourceOutput.textContent = `${panelEstimate.planeIrradiance.toFixed(2)} кВт·ч/м²·сут`;
         if (designMonthOutput) designMonthOutput.textContent = MONTH_LABELS[panelEstimate.designMonth];
         if (panelCountOutput) panelCountOutput.textContent = `${panelEstimate.panelCount} шт.`;
         if (panelPowerOutput) panelPowerOutput.textContent = `${panelEstimate.installedPowerKw.toFixed(2)} кВтп`;
         if (panelAreaOutput) panelAreaOutput.textContent = `${panelEstimate.moduleAreaM2.toFixed(2)} м²`;
       } else {
-        if (arrayResourceOutput && activePlaneIrradiance?.every(Number.isFinite)) {
-          const lowestResource = Math.min(...activePlaneIrradiance);
-          arrayResourceOutput.textContent = lowestResource > 0 ? `${lowestResource.toFixed(2)} кВт·ч/м²·сут` : 'Нет расчётного ресурса';
-        }
-        if (designMonthOutput) designMonthOutput.textContent = activePlaneIrradiance?.every(Number.isFinite)
-          ? MONTH_LABELS[activePlaneIrradiance.indexOf(Math.min(...activePlaneIrradiance))]
-          : 'Нет данных';
+        const validSelectedMonths = activePlaneIrradiance && selectedMonths.length
+          && selectedMonths.every(month => Number.isFinite(activePlaneIrradiance[month]));
+        const weakestSelectedMonth = validSelectedMonths
+          ? selectedMonths.reduce((weakest, month) => activePlaneIrradiance[month] < activePlaneIrradiance[weakest] ? month : weakest)
+          : null;
+        if (designMonthOutput) designMonthOutput.textContent = weakestSelectedMonth === null ? 'Нет данных' : MONTH_LABELS[weakestSelectedMonth];
         if (panelCountOutput) {
           if (!activePlaneIrradiance) panelCountOutput.textContent = 'Сначала выберите город и загрузите сетку';
-          else if (activePlaneIrradiance.some(value => value === null || !Number.isFinite(value))) {
-            panelCountOutput.textContent = 'Недостаточно данных сетки за один или несколько месяцев';
-          } else if (activePlaneIrradiance.some(value => value === 0)) {
-            panelCountOutput.textContent = 'Зона не рассчитана на круглогодичное питание только от солнца';
-          } else panelCountOutput.textContent = 'Заполните нагрузку и паспорт панели';
+          else if (!selectedMonths.length) panelCountOutput.textContent = 'Выберите месяц расчёта';
+          else if (!validSelectedMonths) panelCountOutput.textContent = 'Нет данных сетки за выбранный период';
+          else if (selectedMonths.some(month => activePlaneIrradiance[month] <= 0)) panelCountOutput.textContent = 'Нет солнечного ресурса в выбранном периоде';
+          else if (!(energyKwh > 0) || !panelFieldsValid) panelCountOutput.textContent = 'Заполните нагрузку и паспорт панели';
+          else panelCountOutput.textContent = 'Не удалось выполнить расчёт';
         }
         if (panelPowerOutput) panelPowerOutput.textContent = '—';
         if (panelAreaOutput) panelAreaOutput.textContent = '—';
@@ -467,6 +505,7 @@
     });
     form.addEventListener('input', update);
     form.addEventListener('change', update);
+    periodField.addEventListener('change', syncPeriodControls);
     window.addEventListener('solar:profile-updated', update);
     const cityField = document.getElementById('city');
     const latitudeField = document.getElementById('latitude');

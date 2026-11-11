@@ -130,6 +130,7 @@
     .calc-panel, .calc-results { padding: 21px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
     .calc-panel h3, .calc-results h3 { margin-bottom: 17px; font-size: 17px; }
     .form-grid { display: grid; gap: 14px; }
+    .field[hidden] { display: none; }
     .consumer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 21px 0 12px; }
     .consumer-head h4, .battery-heading { margin: 0; font-size: 14px; }
     .consumer-list { display: grid; gap: 10px; }
@@ -149,9 +150,11 @@
     .solar-profile .formula-note { margin: 0 0 10px; }
     .month-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
     .month-cell { padding: 9px 7px; border: 1px solid var(--line); border-radius: 9px; background: #101811; text-align: center; }
-    .month-cell strong, .month-cell span { display: block; }
+    .month-cell strong, .month-cell span, .month-cell small { display: block; }
     .month-cell strong { color: var(--muted); font-size: 10px; font-weight: 650; }
-    .month-cell span { margin-top: 3px; color: var(--accent-light); font-size: 14px; font-variant-numeric: tabular-nums; }
+    .month-cell .month-resource { margin-top: 3px; color: var(--accent-light); font-size: 14px; font-variant-numeric: tabular-nums; }
+    .month-cell .month-panel-count { margin-top: 2px; color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+    .month-cell.is-selected-period { border-color: var(--accent); background: #e4b85b12; }
     .field label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 12px; font-weight: 700; }
     .field-hint { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.4; }
     .field-hint.wide { grid-column: 1 / -1; }
@@ -322,7 +325,7 @@
 
     <section class="section" id="calculator">
       <div class="wrap">
-        <div class="section-head"><span class="eyebrow">Оценочный инструмент</span><h2>Инженерный калькулятор автономной солнечной электростанции</h2><p>Укажите город, фактическую нагрузку и характеристики панели. Калькулятор оценит рекомендуемое количество модулей по самому слабому месяцу имеющейся солнечной сетки.</p></div>
+        <div class="section-head"><span class="eyebrow">Оценочный инструмент</span><h2>Инженерный калькулятор автономной солнечной электростанции</h2><p>Укажите город, фактическую нагрузку, параметры панели и период эксплуатации. Калькулятор покажет помесячный ресурс и количество модулей для выбранного периода.</p></div>
         <div class="calculator">
           <form class="calc-panel" id="calcForm">
             <h3>Место и потребители</h3>
@@ -333,6 +336,11 @@
               <small class="field-hint wide" id="coordinatesHint">После выбора города подставим его координаты. Для точного места установки замените их своими координатами в десятичном формате. Например: 55°58′ с. ш. → 55.9667; 43°04′ в. д. → 43.0667.</small>
             </div>
             <p class="city-status" id="cityStatus" role="status" aria-live="polite"></p>
+            <h4 class="battery-heading">Расчётный период панелей</h4>
+            <div class="form-grid">
+              <div class="field wide"><label for="solarPeriod">Для какого периода подбирать панели</label><select id="solarPeriod" name="solarPeriod"><option value="year">Весь год — по самому слабому месяцу</option><option value="month">Один выбранный месяц</option><option value="summer">Сезон май–август</option></select></div>
+              <div class="field wide" id="solarMonthField" hidden><label for="solarMonth">Месяц эксплуатации</label><select id="solarMonth" name="solarMonth"><option value="0">Январь</option><option value="1">Февраль</option><option value="2">Март</option><option value="3">Апрель</option><option value="4">Май</option><option value="5">Июнь</option><option value="6">Июль</option><option value="7">Август</option><option value="8">Сентябрь</option><option value="9">Октябрь</option><option value="10">Ноябрь</option><option value="11">Декабрь</option></select></div>
+            </div>
             <div class="consumer-head"><h4>Приборы</h4><button class="button small-button" id="addConsumer" type="button">Добавить прибор</button></div>
             <div class="consumer-list" id="consumerList"></div>
             <h4 class="battery-heading">Характеристики вашей панели</h4>
@@ -356,20 +364,21 @@
             <h3>Оценка</h3>
             <p class="grid-status" id="gridStatus" role="status" aria-live="polite">Данные солнечной сетки не загружены.</p>
             <section class="solar-profile" id="solarProfile" hidden aria-labelledby="solarProfileTitle">
-              <h4 id="solarProfileTitle">Солнечный ресурс по месяцам, кВт·ч/м²·сут</h4>
+              <h4 id="solarProfileTitle">По месяцам: ресурс, кВт·ч/м²·сут · панелей</h4>
+              <p class="formula-note">Число панелей в каждой карточке — отдельный подбор для средней нагрузки этого месяца, по выбранной модели. Это не прогноз выработки одного и того же массива.</p>
               <div class="month-grid" id="planeIrradianceGrid"></div>
             </section>
+            <p class="city-status warning" id="solarPeriodNotice" role="status" aria-live="polite" hidden></p>
             <div class="results-grid">
               <div class="result"><span>Потребление в сутки</span><strong id="dailyEnergy">—</strong></div>
               <div class="result"><span>Сумма мощности приборов</span><strong id="peakLoad">—</strong></div>
-              <div class="result"><span>Солнечный ресурс, кВт·ч/м² в сутки</span><strong id="arrayPower">Выберите город</strong></div>
-              <div class="result"><span>Расчётный месяц</span><strong id="designMonth">—</strong></div>
+              <div class="result"><span>Опорный месяц периода</span><strong id="designMonth">—</strong></div>
               <div class="result"><span>Рекомендуемое количество панелей</span><strong id="panelCount">Заполните нагрузку и параметры панели</strong></div>
               <div class="result"><span>Мощность массива</span><strong id="panelArrayPower">—</strong></div>
               <div class="result"><span>Площадь самих модулей</span><strong id="panelArea">—</strong></div>
               <div class="result"><span>Ёмкость АКБ</span><strong id="batteryCapacity">Заполните поля</strong></div>
             </div>
-            <p class="formula-note">Количество панелей рассчитано для среднего дня самого слабого месяца по солнечной энергии. Это предварительная оценка: она не учитывает затенение, конкретный скат крыши и запас на восстановление АКБ после пасмурного периода.</p>
+            <p class="formula-note">Количество панелей рассчитано по среднемесячному ресурсу выбранного периода. Это предварительная оценка: она не учитывает затенение, конкретный скат крыши и запас на восстановление АКБ после пасмурного периода.</p>
             <p class="formula"><strong>АКБ:</strong> C = (E<sub>day</sub> × Days) / (U<sub>sys</sub> × DoD × T<sub>derating</sub>)</p>
             <p class="formula-note">E<sub>day</sub> в формуле АКБ учитывает КПД инвертора и выражен на стороне аккумулятора. K_loss = 0,75 относится к оценке выработки массива. Результат предварительный; затенение, состояние крыши и совместимость оборудования требуют отдельной оценки.</p>
           </div>

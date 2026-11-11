@@ -88,31 +88,47 @@
     });
   }
 
-  function recommendArray({ dailyEnergyKwh, planeIrradiance, panelPowerW, panelLengthMm, panelWidthMm }) {
-    const inputs = [dailyEnergyKwh, panelPowerW, panelLengthMm, panelWidthMm];
-    if (!inputs.every(Number.isFinite) || inputs.some(value => value <= 0)
-      || !Array.isArray(planeIrradiance) || planeIrradiance.length !== 12
-      || planeIrradiance.some(value => !Number.isFinite(value) || value <= 0)) return null;
-
-    let designMonth = 0;
-    for (let index = 1; index < planeIrradiance.length; index += 1) {
-      if (planeIrradiance[index] < planeIrradiance[designMonth]) designMonth = index;
-    }
-    const requiredArrayPowerKw = dailyEnergyKwh / (planeIrradiance[designMonth] * LOSS_FACTOR);
+  function panelSizingForMonth({ dailyEnergyKwh, planeIrradiance, panelPowerW }) {
+    if (![dailyEnergyKwh, planeIrradiance, panelPowerW].every(Number.isFinite)
+      || dailyEnergyKwh <= 0 || planeIrradiance <= 0 || panelPowerW <= 0) return null;
+    const requiredArrayPowerKw = dailyEnergyKwh / (planeIrradiance * LOSS_FACTOR);
     const panelCount = Math.ceil(requiredArrayPowerKw * 1000 / panelPowerW);
     return {
-      designMonth,
-      planeIrradiance: planeIrradiance[designMonth],
       requiredArrayPowerKw,
       panelCount,
       installedPowerKw: panelCount * panelPowerW / 1000,
-      moduleAreaM2: panelCount * panelLengthMm * panelWidthMm / 1e6,
+    };
+  }
+
+  function recommendArray({ dailyEnergyKwh, planeIrradiance, panelPowerW, panelLengthMm, panelWidthMm, months = Array.from({ length: 12 }, (_, index) => index) }) {
+    const inputs = [dailyEnergyKwh, panelPowerW, panelLengthMm, panelWidthMm];
+    if (!inputs.every(Number.isFinite) || inputs.some(value => value <= 0)
+      || !Array.isArray(planeIrradiance) || planeIrradiance.length !== 12
+      || !Array.isArray(months) || months.length === 0
+      || months.some(month => !Number.isInteger(month) || month < 0 || month >= 12)
+      || new Set(months).size !== months.length
+      || months.some(month => !Number.isFinite(planeIrradiance[month]) || planeIrradiance[month] <= 0)) return null;
+
+    let designMonth = months[0];
+    for (const month of months.slice(1)) {
+      if (planeIrradiance[month] < planeIrradiance[designMonth]) designMonth = month;
+    }
+    const sizing = panelSizingForMonth({ dailyEnergyKwh, planeIrradiance: planeIrradiance[designMonth], panelPowerW });
+    if (!sizing) return null;
+    return {
+      designMonth,
+      planeIrradiance: planeIrradiance[designMonth],
+      requiredArrayPowerKw: sizing.requiredArrayPowerKw,
+      panelCount: sizing.panelCount,
+      installedPowerKw: sizing.installedPowerKw,
+      moduleAreaM2: sizing.panelCount * panelLengthMm * panelWidthMm / 1e6,
       lossFactor: LOSS_FACTOR,
     };
   }
 
   window.SolarResource = Object.freeze({
     monthlyPlaneIrradiance,
+    panelSizingForMonth,
     recommendArray,
     diffuseFractionFromKt,
     extraterrestrialDailyIrradiance,
