@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chearu-stack.github.io/solar_power/sitemap.xml

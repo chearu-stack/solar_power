@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101710">
+  <meta name="description" content="Реальный авторский проект автономной солнечной электростанции в Бахчисарае: монтаж на шиферной крыше, фотографии этапов и калькулятор системы.">
+  <meta name="author" content="Азат Бердыев">
+  <meta name="creator" content="Евгений Чернышев">
+  <meta name="robots" content="index,follow">
+  <title>Солнечная станция — полевой гид</title>
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:site_name" content="Солнечная станция — полевой гид">
+  <meta property="og:title" content="Солнечная станция — полевой гид">
+  <meta property="og:description" content="Реальный авторский проект автономной солнечной электростанции в Бахчисарае: монтаж на шиферной крыше, фотографии этапов и калькулятор системы.">
+  <meta property="og:url" content="https://chearu-stack.github.io/solar_power/">
+  <meta property="og:image" content="https://chearu-stack.github.io/solar_power/img/panels/solar-panels-full-array.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://chearu-stack.github.io/solar_power/">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Солнечная станция — полевой гид",
+    "url": "https://chearu-stack.github.io/solar_power/",
+    "description": "Реальный авторский проект автономной солнечной электростанции в Бахчисарае: монтаж на шиферной крыше, фотографии этапов и калькулятор системы.",
+    "inLanguage": "ru-RU",
+    "author": {
+      "@type": "Person",
+      "name": "Азат Бердыев",
+      "jobTitle": "Автор проекта солнечной электростанции и фотоматериалов"
+    },
+    "creator": {
+      "@type": "Person",
+      "name": "Евгений Чернышев",
+      "jobTitle": "Разработчик сайта",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Павлово"
+      }
+    },
+    "about": {
+      "@type": "CreativeWork",
+      "name": "Авторский кейс автономной солнечной электростанции",
+      "contentLocation": {
+        "@type": "Place",
+        "name": "Бахчисарай"
+      }
+    }
+  }
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101710;
+      --surface: #18231b;
+      --surface-2: #202d23;
+      --line: #354439;
+      --text: #f2f4e9;
+      --muted: #b0b9a9;
+      --accent: #e4b85b;
+      --accent-light: #f5d891;
+      --green: #9bbf86;
+      --max: 1180px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 82px; }
+    body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6; }
+    body.dialog-open { overflow: hidden; }
+    a { color: inherit; }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    :focus-visible { outline: 3px solid var(--accent-light); outline-offset: 3px; }
+    .wrap { width: min(var(--max), calc(100% - 36px)); margin-inline: auto; }
+    .skip-link { position: absolute; left: 12px; top: -60px; z-index: 100; padding: 10px 14px; background: var(--accent); color: #172015; border-radius: 8px; }
+    .skip-link:focus { top: 10px; }
+    .topbar { position: sticky; top: 0; z-index: 20; background: rgb(16 23 16 / 94%); border-bottom: 1px solid var(--line); backdrop-filter: blur(16px); }
+    .topbar-inner { min-height: 70px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 750; letter-spacing: -.03em; }
+    .brand img { width: 38px; height: 38px; }
+    .brand span { line-height: 1.15; }
+    .brand small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 550; letter-spacing: .12em; text-transform: uppercase; }
+    .nav { display: flex; align-items: center; gap: clamp(14px, 2.5vw, 30px); }
+    .nav a { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 650; }
+    .nav a:hover { color: var(--accent-light); }
+    .menu-toggle { display: none; min-width: 44px; min-height: 44px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; cursor: pointer; }
+    .hero { padding: clamp(60px, 9vw, 118px) 0 76px; overflow: hidden; }
+    .hero-grid { display: grid; gap: 42px; align-items: center; }
+    .eyebrow { color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 790px; margin: 14px 0 22px; font-size: clamp(2.45rem, 9vw, 5.7rem); line-height: .99; letter-spacing: -.065em; }
+    h1 em { color: var(--accent-light); font-style: normal; }
+    .hero-copy { max-width: 610px; color: var(--muted); font-size: clamp(16px, 2vw, 19px); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    .button { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 9px; padding: 11px 17px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); text-decoration: none; font-weight: 750; cursor: pointer; transition: transform .18s ease, background .18s ease; }
+    .button:hover { transform: translateY(-2px); background: var(--surface-2); }
+    .button.primary { background: var(--accent); border-color: var(--accent); color: #1b2117; }
+    .hero-card { position: relative; padding: 10px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); transform: rotate(1deg); }
+    .hero-card img { display: block; width: 100%; aspect-ratio: 1.25; object-fit: cover; border-radius: 15px; }
+    .hero-note { position: absolute; right: -8px; bottom: 22px; max-width: 210px; padding: 14px 16px; border: 1px solid #687550; border-radius: 14px; background: #242e20; box-shadow: 0 14px 35px #0007; font-size: 13px; }
+    .hero-note strong { display: block; color: var(--accent-light); font-size: 18px; }
+    .hero-author { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); color: var(--accent); font-size: 11px; }
+    .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 40px; }
+    .fact { padding: 15px; border-left: 2px solid var(--accent); background: linear-gradient(90deg, #ffffff08, transparent); }
+    .fact strong { display: block; font-size: 19px; }
+    .fact span { color: var(--muted); font-size: 12px; }
+    .section { padding: 76px 0; border-top: 1px solid #ffffff12; }
+    .section-head { display: grid; gap: 10px; margin-bottom: 30px; }
+    .section-head h2 { max-width: 700px; margin: 0; font-size: clamp(1.9rem, 5vw, 3.25rem); line-height: 1.05; letter-spacing: -.045em; }
+    .section-head p { max-width: 650px; margin: 0; color: var(--muted); }
+    .gallery-group + .gallery-group { margin-top: 46px; }
+    .group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+    .group-head h3 { margin: 0; font-size: 20px; letter-spacing: -.025em; }
+    .group-head span { color: var(--muted); font-size: 12px; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .photo-card { position: relative; min-width: 0; overflow: hidden; padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); text-align: left; cursor: zoom-in; }
+    .photo-card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transition: transform .35s ease; }
+    .photo-card:hover img { transform: scale(1.035); }
+    .photo-caption { display: block; padding: 12px 13px 14px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .photo-caption strong { display: block; margin-bottom: 4px; color: var(--text); font-size: 14px; }
+    .steps { display: grid; gap: 12px; }
+    .step { display: grid; grid-template-columns: 44px 1fr; gap: 15px; padding: 19px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+    .step-number { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 12px; background: #e4b85b1c; color: var(--accent-light); font-weight: 800; }
+    .step h3 { margin: 2px 0 6px; font-size: 16px; }
+    .step p { margin: 0; color: var(--muted); font-size: 14px; }
+    .calculator { display: grid; gap: 16px; }
+    .calc-panel, .calc-results { padding: 21px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+    .calc-panel h3, .calc-results h3 { margin-bottom: 17px; font-size: 17px; }
+    .form-grid { display: grid; gap: 14px; }
+    .field label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .field input, .field select { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #111a14; color: var(--text); }
+    .voltage-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .voltage-options label { position: relative; }
+    .voltage-options input { position: absolute; opacity: 0; }
+    .voltage-options span { display: grid; min-height: 46px; place-items: center; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); cursor: pointer; }
+    .voltage-options input:checked + span { border-color: var(--accent); background: #e4b85b20; color: var(--accent-light); }
+    .voltage-options input:focus-visible + span { outline: 3px solid var(--accent-light); outline-offset: 2px; }
+    .results-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+    .result { padding: 14px; border-radius: 12px; background: #101811; }
+    .result span { display: block; color: var(--muted); font-size: 11px; }
+    .result strong { display: block; margin-top: 5px; color: var(--accent-light); font-size: clamp(19px, 5vw, 26px); line-height: 1.1; }
+    .formula-note { margin: 14px 0 0; color: var(--muted); font-size: 12px; }
+    .formula { margin-top: 13px; padding: 12px; border-left: 2px solid var(--accent); background: #ffffff08; color: var(--text); font-size: 13px; }
+    .checklist { display: grid; gap: 11px; }
+    .check-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); cursor: pointer; }
+    .check-item input { width: 20px; height: 20px; flex: 0 0 20px; accent-color: var(--accent); }
+    .check-item span { font-size: 14px; }
+    .check-item small { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .footer { padding: 30px 0 36px; border-top: 1px solid var(--line); color: var(--muted); text-align: center; font-size: 13px; }
+    .footer strong { display: block; margin-bottom: 7px; color: var(--accent-light); font-size: 15px; }
+    dialog { width: min(1000px, calc(100% - 24px)); max-width: none; max-height: calc(100dvh - 24px); padding: 0; overflow: hidden; border: 1px solid #ffffff33; border-radius: 18px; background: #101710; color: var(--text); box-shadow: 0 24px 90px #000b; }
+    dialog::backdrop { background: #050905e8; backdrop-filter: blur(7px); }
+    .lightbox-image-wrap { display: grid; min-height: 180px; max-height: calc(100dvh - 155px); place-items: center; background: #080d09; }
+    .lightbox-image-wrap img { display: block; max-width: 100%; max-height: calc(100dvh - 155px); object-fit: contain; }
+    .lightbox-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; }
+    .lightbox-caption { color: var(--muted); font-size: 13px; }
+    .lightbox-controls { display: flex; gap: 7px; }
+    .icon-button { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); cursor: pointer; }
+    @media (min-width: 680px) {
+      .wrap { width: min(var(--max), calc(100% - 56px)); }
+      .hero-grid { grid-template-columns: 1.1fr .9fr; gap: 55px; }
+      .facts { grid-template-columns: repeat(4, 1fr); }
+      .gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+      .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .calculator { grid-template-columns: 1fr 1fr; align-items: start; }
+      .calc-panel, .calc-results { padding: 26px; }
+      .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .field.wide { grid-column: 1 / -1; }
+    }
+    @media (min-width: 1000px) {
+      .gallery-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .topbar-inner { min-height: 64px; }
+      .menu-toggle { display: inline-grid; place-items: center; }
+      .nav { position: absolute; top: calc(100% + 1px); left: 0; right: 0; display: none; padding: 10px 18px 16px; border-bottom: 1px solid var(--line); background: #101710; }
+      .nav.open { display: grid; gap: 0; }
+      .nav a { display: flex; min-height: 48px; align-items: center; border-bottom: 1px solid #ffffff0d; font-size: 15px; }
+    }
+    @media (max-width: 390px) {
+      .wrap { width: calc(100% - 28px); }
+      .hero-card { transform: none; }
+      .gallery-grid { grid-template-columns: 1fr; }
+      .photo-card img { aspect-ratio: 1.35; }
+      .hero-actions .button { width: 100%; }
+      .hero-note { right: 0; }
+      .section { padding: 60px 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержанию</a>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#top" aria-label="Солнечная станция — на главную">
+        <img src="favicon.svg" width="38" height="38" alt="">
+        <span>Солнечная станция<small>Полевой гид</small></span>
+      </a>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="mainNav" aria-label="Открыть меню">☰</button>
+      <nav class="nav" id="mainNav" aria-label="Основная навигация">
+        <a href="#story">История</a><a href="#gallery">Фото</a><a href="#guide">Этапы</a><a href="#calculator">Расчёт</a><a href="#checklist">Список</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">Реальный проект · автономная энергия</span>
+          <h1>Солнечная станция <em>своими руками</em></h1>
+          <p class="hero-copy">От первых направляющих на волнистой крыше до работающей системы с панелями, инвертором и аккумуляторным блоком. Фотографии и заметки — из проекта автора.</p>
+          <div class="hero-actions"><a class="button primary" href="#gallery">Смотреть фотографии <span aria-hidden="true">↘</span></a><a class="button" href="#calculator">Открыть калькулятор</a></div>
+          <div class="facts" id="story">
+            <div class="fact"><strong>18</strong><span>фотографий проекта</span></div>
+            <div class="fact"><strong>Шифер</strong><span>волнистая кровля</span></div>
+            <div class="fact"><strong>Солнце</strong><span>панели и инвертор</span></div>
+            <div class="fact"><strong>Автономно</strong><span>система с аккумуляторами</span></div>
+          </div>
+        </div>
+        <div class="hero-card">
+          <img src="img/panels/solar-panels-full-array.jpg" alt="Солнечные панели, установленные на каркасе над шиферной крышей" fetchpriority="high">
+          <div class="hero-note">
+            <strong>От крыши к системе</strong>
+            Реальные этапы и снимки с объекта
+            <div class="hero-author">Автор кейса: Азат Бердыев</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="gallery">
+      <div class="wrap">
+        <div class="section-head"><span class="eyebrow">Фотодневник проекта</span><h2>Как собиралась станция</h2><p>Снимки сгруппированы по этапам работ. Нажмите на фотографию, чтобы рассмотреть её крупнее.</p></div>
+        <div class="gallery-group">
+          <div class="group-head"><h3>Крыша и крепления</h3><span>Подготовка основания</span></div>
+          <div class="gallery-grid">
+            <button class="photo-card" data-full="img/roof/roof-start-rails.jpg" data-title="Первые направляющие на крыше"><img src="img/roof/roof-start-rails.jpg" loading="lazy" decoding="async" alt="Две длинные направляющие на волнистой шиферной крыше"><span class="photo-caption"><strong>Старт проекта</strong>Первые линии будущего каркаса на крыше.</span></button>
+            <button class="photo-card" data-full="img/roof/roof-tools-and-rails.jpg" data-title="Подготовка направляющих"><img src="img/roof/roof-tools-and-rails.jpg" loading="lazy" decoding="async" alt="Направляющие, инструмент и кабели на крыше"><span class="photo-caption"><strong>Подготовка монтажа</strong>Профили и инструмент разложены на скате.</span></button>
+            <button class="photo-card" data-full="img/roof/roof-rail-fitting.jpg" data-title="Монтаж профилей на скате"><img src="img/roof/roof-rail-fitting.jpg" loading="lazy" decoding="async" alt="Алюминиевые профили на крыше, рядом монтажный инструмент"><span class="photo-caption"><strong>Монтаж профилей</strong>Продолжается сборка основы для панелей.</span></button>
+            <button class="photo-card" data-full="img/roof/roof-flashing-and-rail.jpg" data-title="Крепления на шиферной крыше"><img src="img/roof/roof-flashing-and-rail.jpg" loading="lazy" decoding="async" alt="Профиль и крепёжные точки на шиферной крыше"><span class="photo-caption"><strong>Узлы крепления</strong>Вид профиля и опор на кровле.</span></button>
+            <button class="photo-card" data-full="img/roof/roof-supports-back.jpg" data-title="Каркас со стороны кровли"><img src="img/roof/roof-supports-back.jpg" loading="lazy" decoding="async" alt="Каркасные направляющие, закреплённые на волнистом шифере"><span class="photo-caption"><strong>Опоры каркаса</strong>Направляющие распределены по скату.</span></button>
+            <button class="photo-card" data-full="img/roof/roof-cross-rail-frame.jpg" data-title="Собранная решётка каркаса"><img src="img/roof/roof-cross-rail-frame.jpg" loading="lazy" decoding="async" alt="Перекрёстные алюминиевые профили образуют каркас под панели"><span class="photo-caption"><strong>Каркас готовится</strong>Поперечные профили соединены с опорами.</span></button>
+            <button class="photo-card" data-full="img/roof/roof-frame-side-view.jpg" data-title="Каркас на скате крыши"><img src="img/roof/roof-frame-side-view.jpg" loading="lazy" decoding="async" alt="Вид сбоку на опорный каркас для солнечных панелей над шифером"><span class="photo-caption"><strong>Основа под панели</strong>Каркас виден со стороны ската.</span></button>
+          </div>
+        </div>
+        <div class="gallery-group">
+          <div class="group-head"><h3>Подготовка места и оборудование</h3><span>Техническая зона</span></div>
+          <div class="gallery-grid">
+            <button class="photo-card" data-full="img/technical-room/room-preparation.jpg" data-title="Подготовка технического помещения"><img src="img/technical-room/room-preparation.jpg" loading="lazy" decoding="async" alt="Помещение в процессе подготовки под оборудование"><span class="photo-caption"><strong>Место для оборудования</strong>Подготовка технической зоны внутри дома.</span></button>
+            <button class="photo-card" data-full="img/technical-room/room-laser-layout.jpg" data-title="Подготовка помещения"><img src="img/technical-room/room-laser-layout.jpg" loading="lazy" decoding="async" alt="Внутренняя стена и техническое помещение в процессе подготовки"><span class="photo-caption"><strong>Подготовка помещения</strong>Формируется зона для компонентов системы.</span></button>
+            <button class="photo-card" data-full="img/technical-room/room-door-screen.jpg" data-title="Проём технического помещения"><img src="img/technical-room/room-door-screen.jpg" loading="lazy" decoding="async" alt="Проём и стена технического помещения во время ремонта"><span class="photo-caption"><strong>Работы внутри дома</strong>Подготовка пространства рядом с будущим оборудованием.</span></button>
+            <button class="photo-card" data-full="img/technical-room/room-doorway-work.jpg" data-title="Подготовка технического помещения"><img src="img/technical-room/room-doorway-work.jpg" loading="lazy" decoding="async" alt="Дверной проём технического помещения во время ремонта"><span class="photo-caption"><strong>Техническая зона</strong>Помещение приводится в порядок перед установкой.</span></button>
+          </div>
+        </div>
+        <div class="gallery-group">
+          <div class="group-head"><h3>Солнечные панели</h3><span>Монтаж модулей</span></div>
+          <div class="gallery-grid">
+            <button class="photo-card" data-full="img/panels/solar-panels-roof-array.jpg" data-title="Панели на опорной конструкции"><img src="img/panels/solar-panels-roof-array.jpg" loading="lazy" decoding="async" alt="Несколько солнечных модулей установлены на каркасе над шиферной крышей"><span class="photo-caption"><strong>Панели установлены</strong>Модули закреплены на собранной конструкции.</span></button>
+            <button class="photo-card" data-full="img/panels/solar-panels-full-array.jpg" data-title="Солнечный массив на крыше"><img src="img/panels/solar-panels-full-array.jpg" loading="lazy" decoding="async" alt="Большой солнечный массив занимает скат крыши"><span class="photo-caption"><strong>Солнечный массив</strong>Общий вид установленных панелей.</span></button>
+          </div>
+        </div>
+        <div class="gallery-group">
+          <div class="group-head"><h3>Аккумуляторы, инвертор и работа системы</h3><span>Подключение и наблюдения</span></div>
+          <div class="gallery-grid">
+            <button class="photo-card" data-full="img/system/inverter-battery-bank.jpg" data-title="Инвертор и аккумуляторный блок"><img src="img/system/inverter-battery-bank.jpg" loading="lazy" decoding="async" alt="Гибридный инвертор подключён к аккумуляторному блоку"><span class="photo-caption"><strong>Инвертор и аккумуляторы</strong>Оборудование установлено в техническом помещении.</span></button>
+            <button class="photo-card" data-full="img/system/battery-bms-connections.jpg" data-title="Подключение BMS к аккумуляторам"><img src="img/system/battery-bms-connections.jpg" loading="lazy" decoding="async" alt="Плата BMS и балансировочные провода на аккумуляторных ячейках"><span class="photo-caption"><strong>Аккумуляторный блок</strong>Крупный план BMS и соединений ячеек.</span></button>
+            <button class="photo-card" data-full="img/system/inverter-output-reading.jpg" data-title="Показания инвертора"><img src="img/system/inverter-output-reading.jpg" loading="lazy" decoding="async" alt="Экран инвертора показывает текущие потоки энергии"><span class="photo-caption"><strong>Первые наблюдения</strong>Автор зафиксировал выработку 1,761 кВт.</span></button>
+            <button class="photo-card" data-full="img/system/installed-solar-system.jpg" data-title="Подключённая система"><img src="img/system/installed-solar-system.jpg" loading="lazy" decoding="async" alt="Инвертор, электрические щиты и аккумуляторный блок в сборе"><span class="photo-caption"><strong>Система подключена</strong>Панели, сеть, инвертор и аккумуляторы в одном контуре.</span></button>
+            <button class="photo-card" data-full="img/system/controller-output-reading.jpg" data-title="Показание солнечной выработки"><img src="img/system/controller-output-reading.jpg" loading="lazy" decoding="async" alt="Экран контроллера с отображением солнечной мощности и состояния аккумулятора"><span class="photo-caption"><strong>Наблюдение за системой</strong>Зафиксированный автором максимум — 2,856 кВт.</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="guide">
+      <div class="wrap">
+        <div class="section-head"><span class="eyebrow">Полевые этапы</span><h2>Путь от крыши до первых показаний</h2><p>Последовательность собрана по фотографиям и сообщениям автора; календарные даты здесь не используются.</p></div>
+        <div class="steps">
+          <article class="step"><div class="step-number">01</div><div><h3>Начало на крыше</h3><p>Подготовка ската и установка первых направляющих на шиферной кровле.</p></div></article>
+          <article class="step"><div class="step-number">02</div><div><h3>Сборка каркаса</h3><p>Опоры и поперечные профили формируют основание для солнечных модулей.</p></div></article>
+          <article class="step"><div class="step-number">03</div><div><h3>Подготовка технического места</h3><p>Внутри дома готовится зона для инвертора и аккумуляторного блока.</p></div></article>
+          <article class="step"><div class="step-number">04</div><div><h3>Аккумуляторы и первые испытания</h3><p>Автор подключает аккумуляторный блок к инвертору и начинает проверку системы.</p></div></article>
+          <article class="step"><div class="step-number">05</div><div><h3>Установка панелей</h3><p>Солнечные модули занимают каркас на крыше.</p></div></article>
+          <article class="step"><div class="step-number">06</div><div><h3>Наблюдение за выработкой</h3><p>Показания контроллера фиксируют работу системы при солнечном освещении.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="calculator">
+      <div class="wrap">
+        <div class="section-head"><span class="eyebrow">Оценочный инструмент</span><h2>Калькулятор солнечного массива</h2><p>Введите параметры панелей и местную оценку солнечных часов. Для расчёта АКБ явно задайте желаемый резерв и коэффициенты — скрытых допущений нет.</p></div>
+        <div class="calculator">
+          <form class="calc-panel" id="calcForm">
+            <h3>Параметры системы</h3>
+            <div class="form-grid">
+              <div class="field"><label for="panelPower">Мощность панели, Вт</label><input id="panelPower" name="panelPower" type="number" min="50" max="1000" step="10" value="450" inputmode="numeric"></div>
+              <div class="field"><label for="panelCount">Количество панелей, шт.</label><input id="panelCount" name="panelCount" type="number" min="1" max="100" step="1" value="8" inputmode="numeric"></div>
+              <div class="field"><label for="sunHours">Солнечный эквивалент, ч/день</label><input id="sunHours" name="sunHours" type="number" min="0.1" max="12" step="0.1" value="4" inputmode="decimal"></div>
+              <div class="field"><label for="voltage">Напряжение АКБ, В</label><select id="voltage" name="voltage"><option value="">Выберите</option><option value="12">12 В</option><option value="24">24 В</option><option value="48">48 В</option></select></div>
+              <div class="field"><label for="days">Желаемый резерв, дней</label><input id="days" name="days" type="number" min="0.1" max="30" step="0.1" placeholder="Укажите сами" inputmode="decimal"></div>
+              <div class="field"><label for="dod">DoD, %</label><input id="dod" name="dod" type="number" min="1" max="100" step="1" placeholder="По паспорту АКБ" inputmode="numeric"></div>
+              <div class="field wide"><label for="derating">Температурный коэффициент, %</label><input id="derating" name="derating" type="number" min="1" max="100" step="1" placeholder="Укажите коэффициент системы" inputmode="numeric"></div>
+            </div>
+          </form>
+          <div class="calc-results" aria-live="polite">
+            <h3>Оценка</h3>
+            <div class="results-grid">
+              <div class="result"><span>Пиковая мощность массива</span><strong id="totalPower">—</strong></div>
+              <div class="result"><span>Ориентир площади</span><strong id="arrayArea">—</strong></div>
+              <div class="result"><span>Суточная выработка</span><strong id="dailyEnergy">—</strong></div>
+              <div class="result"><span>Ёмкость АКБ</span><strong id="batteryCapacity">Заполните поля</strong></div>
+            </div>
+            <p class="formula"><strong>АКБ:</strong> C = (E<sub>day</sub> × Days) / (U<sub>sys</sub> × DoD × T<sub>derating</sub>)</p>
+            <p class="formula-note">В оценке выработки используется коэффициент потерь 0,75. Площадь рассчитана по ориентиру 2 м² на панель 450 Вт. Для проектирования нужны фактические характеристики оборудования, площадки и нагрузки.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="checklist">
+      <div class="wrap">
+        <div class="section-head"><span class="eyebrow">Локальный список</span><h2>Что подготовить к монтажу</h2><p>Отметки сохраняются в этом браузере на устройстве.</p></div>
+        <div class="checklist">
+          <label class="check-item"><input type="checkbox" data-check="roof"><span>Проверить состояние крыши и несущих элементов<small>Убедиться, что основание подходит для выбранной конструкции.</small></span></label>
+          <label class="check-item"><input type="checkbox" data-check="mounts"><span>Подготовить крепления и направляющий профиль<small>Подобрать элементы под тип кровли и панели.</small></span></label>
+          <label class="check-item"><input type="checkbox" data-check="panels"><span>Сверить характеристики и количество панелей<small>Проверить габариты, мощность и электрические параметры.</small></span></label>
+          <label class="check-item"><input type="checkbox" data-check="inverter"><span>Сверить инвертор, аккумуляторы и защиту<small>Следовать паспортам оборудования и применимым правилам электромонтажа.</small></span></label>
+          <label class="check-item"><input type="checkbox" data-check="cables"><span>Подготовить кабели, соединители и маркировку<small>Сечение и тип кабеля выбирать по расчёту конкретной системы.</small></span></label>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="wrap">
+      <strong>© 2026 Азат Бердыев · Авторский кейс СЭС</strong>
+      <span>Полевой гид по солнечной электростанции | Спроектировано в chearu-stack</span>
+    </div>
+  </footer>
+
+  <dialog id="lightbox" aria-label="Просмотр фотографии">
+    <div class="lightbox-image-wrap"><img id="lightboxImage" alt=""></div>
+    <div class="lightbox-bar"><div class="lightbox-caption" id="lightboxCaption"></div><div class="lightbox-controls"><button class="icon-button" id="previousPhoto" type="button" aria-label="Предыдущая фотография">←</button><button class="icon-button" id="nextPhoto" type="button" aria-label="Следующая фотография">→</button><button class="icon-button" id="closeLightbox" type="button" aria-label="Закрыть">×</button></div></div>
+  </dialog>
+  <script>
+    (() => {
+      const STORAGE_KEY = 'solar-guide-state-v1';
+      const form = document.getElementById('calcForm');
+      const savedState = (() => {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+        catch { return {}; }
+      })();
+
+      for (const field of form.elements) {
+        if (field.name && Object.hasOwn(savedState, field.name)) field.value = savedState[field.name];
+      }
+
+      function updateCalculator() {
+        const panelPower = Number(form.elements.panelPower.value);
+        const count = Number(form.elements.panelCount.value);
+        const sunHours = Number(form.elements.sunHours.value);
+        const totalW = panelPower * count;
+        const dailyKwh = totalW / 1000 * sunHours * 0.75;
+        document.getElementById('totalPower').textContent = Number.isFinite(totalW) && totalW > 0 ? `${(totalW / 1000).toFixed(2)} кВт` : '—';
+        document.getElementById('arrayArea').textContent = Number.isFinite(totalW) && totalW > 0 ? `${(count * panelPower / 450 * 2).toFixed(1)} м²` : '—';
+        document.getElementById('dailyEnergy').textContent = Number.isFinite(dailyKwh) && dailyKwh > 0 ? `${dailyKwh.toFixed(2)} кВт·ч` : '—';
+
+        const voltage = Number(form.elements.voltage.value);
+        const days = Number(form.elements.days.value);
+        const dod = Number(form.elements.dod.value) / 100;
+        const derating = Number(form.elements.derating.value) / 100;
+        const ready = voltage > 0 && days > 0 && dod > 0 && dod <= 1 && derating > 0 && derating <= 1 && dailyKwh > 0;
+        document.getElementById('batteryCapacity').textContent = ready
+          ? `${Math.ceil(dailyKwh * 1000 * days / (voltage * dod * derating))} А·ч`
+          : 'Заполните поля';
+
+        const state = Object.fromEntries([...form.elements].filter(field => field.name).map(field => [field.name, field.value]));
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+      }
+      form.addEventListener('input', updateCalculator);
+      form.addEventListener('change', updateCalculator);
+      updateCalculator();
+
+      document.querySelectorAll('[data-check]').forEach(input => {
+        const key = `solar-check-${input.dataset.check}`;
+        try { input.checked = localStorage.getItem(key) === 'true'; } catch {}
+        input.addEventListener('change', () => { try { localStorage.setItem(key, String(input.checked)); } catch {} });
+      });
+
+      const menuToggle = document.getElementById('menuToggle');
+      const mainNav = document.getElementById('mainNav');
+      menuToggle.addEventListener('click', () => {
+        const expanded = menuToggle.getAttribute('aria-expanded') === 'true';
+        menuToggle.setAttribute('aria-expanded', String(!expanded));
+        menuToggle.setAttribute('aria-label', expanded ? 'Открыть меню' : 'Закрыть меню');
+        mainNav.classList.toggle('open', !expanded);
+      });
+      mainNav.addEventListener('click', event => {
+        if (event.target.closest('a')) {
+          mainNav.classList.remove('open');
+          menuToggle.setAttribute('aria-expanded', 'false');
+          menuToggle.setAttribute('aria-label', 'Открыть меню');
+        }
+      });
+
+      const cards = [...document.querySelectorAll('.photo-card')];
+      const dialog = document.getElementById('lightbox');
+      const image = document.getElementById('lightboxImage');
+      const caption = document.getElementById('lightboxCaption');
+      let activeIndex = 0;
+      function showPhoto(index) {
+        activeIndex = (index + cards.length) % cards.length;
+        const card = cards[activeIndex];
+        image.src = card.dataset.full;
+        image.alt = card.querySelector('img').alt;
+        caption.textContent = `${card.dataset.title} · ${activeIndex + 1} из ${cards.length}`;
+      }
+      cards.forEach((card, index) => card.addEventListener('click', () => {
+        showPhoto(index);
+        dialog.showModal();
+        document.body.classList.add('dialog-open');
+      }));
+      function closeDialog() { dialog.close(); document.body.classList.remove('dialog-open'); }
+      document.getElementById('closeLightbox').addEventListener('click', closeDialog);
+      document.getElementById('previousPhoto').addEventListener('click', () => showPhoto(activeIndex - 1));
+      document.getElementById('nextPhoto').addEventListener('click', () => showPhoto(activeIndex + 1));
+      dialog.addEventListener('close', () => document.body.classList.remove('dialog-open'));
+      dialog.addEventListener('click', event => { if (event.target === dialog) closeDialog(); });
+      dialog.addEventListener('keydown', event => {
+        if (event.key === 'ArrowLeft') showPhoto(activeIndex - 1);
+        if (event.key === 'ArrowRight') showPhoto(activeIndex + 1);
+      });
+    })();
+  </script>
+</body>
+</html>

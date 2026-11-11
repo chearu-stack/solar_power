@@ -1,0 +1,6 @@
+# Внутренние описательные документы и материалы переписки не публикуются.
+*.md
+/docs/
+/specs/
+/solar_installation_guide_calculator.html
+/_site/
